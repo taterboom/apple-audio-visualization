@@ -90,8 +90,7 @@ function App() {
                     style={
                       source === "/example-music.mp3"
                         ? {
-                            background:
-                              "url(https://i.scdn.co/image/ab67616d0000b27392e2cb1afd736d2e462ba1d5)",
+                            background: "url(/feixingting-cover.jpeg) no-repeat",
                             filter: "blur(32px) brightness(1.2) contrast(0.8)",
                           }
                         : {}
