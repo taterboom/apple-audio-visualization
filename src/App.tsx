@@ -11,11 +11,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./components/ui/select"
+import VisualizationProvider from "./components/Visualization/VisualizationProvider"
 
 function App() {
   const [inputType, setInputType] = useState<"songs" | "upload" | "record">("songs")
   const [source, setSource] = useState<string | MediaStream | null>(null)
-  const [type, setType] = useState<"normal" | "apple">("normal")
+  const [type, setType] = useState<Array<"normal" | "apple">>(["normal", "apple"])
 
   useEffect(() => {
     if (inputType === "record") {
@@ -24,8 +25,6 @@ function App() {
       })
     }
   }, [inputType])
-
-  console.log("source", source)
 
   return (
     <>
@@ -44,17 +43,20 @@ function App() {
           </ToggleGroup>
         </div>
         {inputType === "songs" && (
-          <Select onValueChange={(v) => setSource(v)}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Select a song" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectLabel>Songs</SelectLabel>
-                <SelectItem value="/example-pretender.mp3">pretender</SelectItem>
-              </SelectGroup>
-            </SelectContent>
-          </Select>
+          <>
+            <Select onValueChange={(v) => setSource(v)}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Select a song" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectLabel>Songs</SelectLabel>
+                  <SelectItem value="/drum.mp3">Drum Demo</SelectItem>
+                  <SelectItem value="/example-music.mp3">Music</SelectItem>
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </>
         )}
         {inputType === "upload" && (
           <input
@@ -66,7 +68,7 @@ function App() {
         )}
         <div>
           <ToggleGroup
-            type="single"
+            type="multiple"
             className="justify-start"
             value={type}
             onValueChange={(v: never) => setType(v)}
@@ -76,13 +78,29 @@ function App() {
           </ToggleGroup>
         </div>
         {!!source && (
-          <div>
-            {type === "normal" ? (
-              <Visualization source={source}></Visualization>
-            ) : (
-              <AppleVisualization source={source}></AppleVisualization>
+          <VisualizationProvider source={source}>
+            {(frequencyDataRef) => (
+              <div>
+                {type.includes("normal") && (
+                  <Visualization frequencyDataRef={frequencyDataRef}></Visualization>
+                )}
+                {type.includes("apple") && (
+                  <AppleVisualization
+                    frequencyDataRef={frequencyDataRef}
+                    style={
+                      source === "/example-music.mp3"
+                        ? {
+                            background:
+                              "url(https://i.scdn.co/image/ab67616d0000b27392e2cb1afd736d2e462ba1d5)",
+                            filter: "blur(32px) brightness(1.2) contrast(0.8)",
+                          }
+                        : {}
+                    }
+                  ></AppleVisualization>
+                )}
+              </div>
             )}
-          </div>
+          </VisualizationProvider>
         )}
       </main>
     </>

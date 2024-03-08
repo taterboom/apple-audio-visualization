@@ -1,20 +1,6 @@
-import { getEnergy, map } from "@/lib/audio"
+import { getEnergy, map, normalizeUint8 } from "@/lib/audio"
 import { useEffect, useRef, useState } from "react"
 import { Slider } from "../ui/slider"
-
-// const BASS = [20, 140]
-// const LOWMID = [140, 400]
-// const MID = [400, 2600]
-// const HIGHMID = [2600, 5200]
-// const TREBLE = [5200, 14000]
-
-// const FREQUENCIES_BALANCER = [
-//   [170, 255],
-//   [190, 255],
-//   [100, 210],
-//   [60, 160],
-//   [40, 180],
-// ]
 
 const SUB_BASS = [20, 60]
 const BASS = [60, 250]
@@ -26,60 +12,37 @@ const HIGH = [4000, 20000]
 const FREQUENCIES = [SUB_BASS, BASS, LOW_MID, MID, UPPER_MID, HIGH]
 
 const FREQUENCIES_BALANCERS: [number, number][] = [
-  [190, 255],
-  [200, 254],
-  [170, 240],
-  [130, 220],
-  [80, 190],
-  [40, 170],
+  [0.5, 1],
+  [0.5, 0.96],
+  [0.35, 0.83],
+  [0.28, 0.74],
+  [0.19, 0.66],
+  [0.03, 0.37],
 ]
 
-export default function AppleVisualization(props: { source: string | MediaStream }) {
-  const containerRef = useRef<HTMLDivElement>(null)
+export default function AppleVisualization(props: {
+  frequencyDataRef: React.MutableRefObject<Uint8Array | null>
+  style?: React.CSSProperties
+}) {
   const [frequenciesBalancers, setFrequenciesBalancers] = useState(FREQUENCIES_BALANCERS)
   const frequenciesBalancersRef = useRef(frequenciesBalancers)
   frequenciesBalancersRef.current = frequenciesBalancers
 
   useEffect(() => {
     function main() {
-      let closeSource: () => void = () => {}
-      const audioCtx = new AudioContext()
-      const analyser = audioCtx.createAnalyser()
-      analyser.connect(audioCtx.destination)
-      if (props.source instanceof MediaStream) {
-        const source = audioCtx.createMediaStreamSource(props.source)
-        source.connect(analyser)
-        closeSource = () => {
-          if (!(props.source instanceof MediaStream)) {
-            return
-          }
-          props.source.getTracks().forEach(function (track) {
-            track.stop()
-          })
-        }
-      } else {
-        const audioEl = new Audio(props.source)
-        audioEl.play()
-        const source = audioCtx.createMediaElementSource(audioEl)
-        source.connect(analyser)
-        closeSource = () => {
-          audioEl.pause()
-          audioEl.remove()
-        }
-      }
-
-      analyser.fftSize = 2048
-      const bufferLength = analyser.frequencyBinCount
-      const frequencyData = new Uint8Array(bufferLength)
-
-      const containerEl = containerRef.current!
+      const containerEl = document.getElementById(
+        "apple-visualization-mask"
+      ) as unknown as SVGMaskElement
       const children = Array.from({ length: FREQUENCIES.length }, () =>
-        document.createElement("div")
+        document.createElementNS("http://www.w3.org/2000/svg", "rect")
       )
-      children.forEach((el) => {
-        el.style.width = "84px"
-        el.style.backgroundImage = "linear-gradient(180deg, hsl(0, 10%, 5%), hsl(0, 100%, 50%))"
-        el.style.backgroundSize = "100% 255px"
+      children.forEach((el, i) => {
+        el.setAttribute("width", "32")
+        el.setAttribute("height", "255")
+        el.setAttribute("fill", "white")
+        el.setAttribute("rx", "16")
+        el.setAttribute("x", `${i * (32 + 8)}`)
+        el.style.transition = "all 0.07s"
       })
       containerEl.append(...children)
 
@@ -87,14 +50,17 @@ export default function AppleVisualization(props: { source: string | MediaStream
 
       function draw() {
         animateId = requestAnimationFrame(draw)
-        analyser.getByteFrequencyData(frequencyData)
+        const frequencyData = props.frequencyDataRef.current
+        if (!frequencyData) return
 
         for (let i = 0; i < FREQUENCIES.length; i++) {
           const el = children[i]
           const [f1, f2] = FREQUENCIES[i]
           const balance = frequenciesBalancersRef.current[i]
-          const energy = map(getEnergy(frequencyData, f1, f2), balance[0], balance[1], 0, 255)
-          el.style.height = `${map(energy, 0, 255, 0, 100)}%`
+          const energy = normalizeUint8(getEnergy(frequencyData, f1, f2))
+          const amplitude = map(energy, balance[0], balance[1], 32, 255, { process: (v) => v ** 3 })
+          el.setAttribute("height", `${amplitude}`)
+          el.setAttribute("y", `${(255 - amplitude) / 2}`)
         }
       }
 
@@ -102,18 +68,27 @@ export default function AppleVisualization(props: { source: string | MediaStream
 
       return () => {
         cancelAnimationFrame(animateId)
-        audioCtx.close()
-        closeSource()
         containerEl.innerHTML = ""
       }
     }
 
     return main()
-  }, [props.source])
+  }, [props.frequencyDataRef])
 
   return (
     <div className="group">
-      <div ref={containerRef} className="h-[255px] flex items-start -scale-y-100"></div>
+      <svg viewBox="0 0 600 255" className="w-0 h-0">
+        <mask id="apple-visualization-mask"></mask>
+      </svg>
+      <div
+        className="w-96 h-[255px]"
+        style={{
+          mask: `url(#apple-visualization-mask)`,
+          // background: `linear-gradient(to right bottom, rgb(254, 240, 138), rgb(187, 247, 208), rgb(34, 197, 94))`,
+          background: `hsl(0, 80%, 35%)`,
+          ...props.style,
+        }}
+      ></div>
       <div className="flex mt-4 opacity-0 transition-opacity group-hover:opacity-100">
         {frequenciesBalancers.map((item, i) => (
           <div key={i} style={{ width: 84 }}>
@@ -139,8 +114,8 @@ function Balancer(props: { value: [number, number]; onChange: (value: [number, n
     <div>
       <div className="h-[255px] ml-[32px]">
         <Slider
-          max={255}
-          step={1}
+          max={1}
+          step={0.01}
           orientation="vertical"
           value={props.value}
           onValueChange={props.onChange}

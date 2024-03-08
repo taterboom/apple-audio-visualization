@@ -1,44 +1,15 @@
-import { map } from "@/lib/audio"
+import { map, normalizeUint8 } from "@/lib/audio"
 import { useEffect, useRef } from "react"
 
-export default function Visualization(props: { source: string | MediaStream }) {
+export default function Visualization(props: {
+  frequencyDataRef: React.MutableRefObject<Uint8Array | null>
+}) {
   const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     function main() {
-      let closeSource: () => void = () => {}
-      const audioCtx = new AudioContext()
-      const analyser = audioCtx.createAnalyser()
-      analyser.connect(audioCtx.destination)
-      if (props.source instanceof MediaStream) {
-        const source = audioCtx.createMediaStreamSource(props.source)
-        source.connect(analyser)
-        closeSource = () => {
-          if (!(props.source instanceof MediaStream)) {
-            return
-          }
-          props.source.getTracks().forEach((track) => {
-            console.log("track", track)
-            track.stop()
-          })
-        }
-      } else {
-        const audioEl = new Audio(props.source)
-        audioEl.play()
-        const source = audioCtx.createMediaElementSource(audioEl)
-        source.connect(analyser)
-        closeSource = () => {
-          audioEl.pause()
-          audioEl.remove()
-        }
-      }
-
-      analyser.fftSize = 2048
-      const bufferLength = analyser.frequencyBinCount
-      const frequencyData = new Uint8Array(bufferLength)
-
       const containerEl = containerRef.current!
-      const children = Array.from({ length: frequencyData.length }, () =>
+      const children = Array.from({ length: props.frequencyDataRef.current!.length }, () =>
         document.createElement("div")
       )
       children.forEach((el) => {
@@ -50,12 +21,29 @@ export default function Visualization(props: { source: string | MediaStream }) {
 
       let animateId: number
 
+      // let max = -Infinity
+      // let min = 0
+      // const a = new Float32Array(bufferLength)
       function draw() {
         animateId = requestAnimationFrame(draw)
-        analyser.getByteFrequencyData(frequencyData)
+        // analyser.getFloatFrequencyData(frequencyData)
+        // console.log("frequencyData", max, min, frequencyData)
+        // for (let i = 0; i < frequencyData.length; i++) {
+        //   if (frequencyData[i] > max) {
+        //     max = frequencyData[i]
+        //   }
+        //   if (frequencyData[i] !== -Infinity && frequencyData[i] < min) {
+        //     min = frequencyData[i]
+        //   }
+        //   const el = children[i]
+        //   el.style.height = `${map(frequencyData[i], 0, 255, 0, 100)}%`
+        // }
+        const frequencyData = props.frequencyDataRef.current
+        if (!frequencyData) return
         for (let i = 0; i < frequencyData.length; i++) {
+          const magnitude = normalizeUint8(frequencyData[i])
           const el = children[i]
-          el.style.height = `${map(frequencyData[i], 0, 255, 0, 100)}%`
+          el.style.height = `${map(magnitude, 0, 1, 0, 100)}%`
         }
       }
 
@@ -63,14 +51,12 @@ export default function Visualization(props: { source: string | MediaStream }) {
 
       return () => {
         cancelAnimationFrame(animateId)
-        audioCtx.close()
-        closeSource()
         containerEl.innerHTML = ""
       }
     }
 
     return main()
-  }, [props.source])
+  }, [props.frequencyDataRef])
 
   return (
     <div
