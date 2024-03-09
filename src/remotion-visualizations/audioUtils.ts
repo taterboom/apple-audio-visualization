@@ -40,7 +40,7 @@ export const processAudioFftValue: (
   const db = toDecibel(v)
 
   // scale to fit between min and max
-  const scaled = clamp(range(db, minDb, maxDb), 0, 1)
+  const scaled = range(db, minDb, maxDb)
 
   return scaled
 }

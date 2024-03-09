@@ -15,15 +15,15 @@ const FREQUENCIES = [SUB_BASS, BASS, LOW_MID, MID, UPPER_MID, HIGH]
 const FREQUENCIES_BALANCERS: [number, number][] = [
   [0.5, 1],
   [0.5, 0.96],
-  [0.35, 0.83],
-  [0.28, 0.74],
-  [0.19, 0.66],
-  [0.03, 0.37],
+  [0.35, 0.82],
+  [0.28, 0.73],
+  [0.19, 0.64],
+  [0.04, 0.53],
 ]
 
 export const getBars = ({ frequencyData }: { frequencyData: number[] }) => {
   const defaultFrequencyData = frequencyData.map(
-    (v, i) => processAudioFftValue(v) - map(i, 0, frequencyData.length, 0.4, 1) * 0.26
+    (v, i) => processAudioFftValue(v) - map(i, 0, frequencyData.length, 0.4, 1) * 0.27
   )
   const bars = Array.from({ length: FREQUENCIES.length }).map((_, i) => {
     const energy = getEnergy(defaultFrequencyData, FREQUENCIES[i][0], FREQUENCIES[i][1])
