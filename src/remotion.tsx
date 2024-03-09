@@ -43,8 +43,12 @@ const Scene = () => {
 export const App: React.FC = () => {
   return (
     <>
-      <div className="m-4 text-blue-400 text-sm underline">
+      <h1 className="mt-4 px-4 text-lg font-semibold">
+        Apple Audio Visualization based on Remotion
+      </h1>
+      <div className="absolute top-[18px] left-[500px] space-x-4 text-blue-400 text-sm underline">
         <a href="https://github.com/taterboom/apple-audio-visualization">Github</a>
+        <a href="/">Web version</a>
       </div>
       <Player
         component={Scene}
