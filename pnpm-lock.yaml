@@ -23,6 +23,12 @@ dependencies:
   '@radix-ui/react-toggle-group':
     specifier: ^1.0.4
     version: 1.0.4(@types/react-dom@18.2.20)(@types/react@18.2.63)(react-dom@18.2.0)(react@18.2.0)
+  '@remotion/media-utils':
+    specifier: ^4.0.123
+    version: 4.0.123(react-dom@18.2.0)(react@18.2.0)
+  '@remotion/player':
+    specifier: ^4.0.123
+    version: 4.0.123(react-dom@18.2.0)(react@18.2.0)
   class-variance-authority:
     specifier: ^0.7.0
     version: 0.7.0
@@ -35,6 +41,9 @@ dependencies:
   react-dom:
     specifier: ^18.2.0
     version: 18.2.0(react@18.2.0)
+  remotion:
+    specifier: ^4.0.123
+    version: 4.0.123(react-dom@18.2.0)(react@18.2.0)
   tailwind-merge:
     specifier: ^2.2.1
     version: 2.2.1
@@ -1229,6 +1238,28 @@ packages:
     resolution: {integrity: sha512-fyrgCaedtvMg9NK3en0pnOYJdtfwxUcNolezkNPUsoX57X8oQk+NkqcvzHXD2uKNij6GXmWU9NDru2IWjrO4BQ==}
     dependencies:
       '@babel/runtime': 7.24.0
+    dev: false
+
+  /@remotion/media-utils@4.0.123(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-GKujo0vQfohB1zLyAkZNLISaajGYiJuopVrHTmm1cshT4dgOl8nbBEBS32Op9wqAlX0CKL39zFlI6BEbvMPDbA==}
+    peerDependencies:
+      react: '>=16.8.0'
+      react-dom: '>=16.8.0'
+    dependencies:
+      react: 18.2.0
+      react-dom: 18.2.0(react@18.2.0)
+      remotion: 4.0.123(react-dom@18.2.0)(react@18.2.0)
+    dev: false
+
+  /@remotion/player@4.0.123(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-/qd3KiRQ33KGIU5Dwhp7cEP0V5hRB2yCHDeV8Bo5teaRe1luC2SLRGtPcfD4/VboLk+l2A/PkrKXdIpzuEGZJw==}
+    peerDependencies:
+      react: '>=16.8.0'
+      react-dom: '>=16.8.0'
+    dependencies:
+      react: 18.2.0
+      react-dom: 18.2.0(react@18.2.0)
+      remotion: 4.0.123(react-dom@18.2.0)(react@18.2.0)
     dev: false
 
   /@rollup/rollup-android-arm-eabi@4.12.0:
@@ -2663,6 +2694,16 @@ packages:
 
   /regenerator-runtime@0.14.1:
     resolution: {integrity: sha512-dYnhHh0nJoMfnkZs6GmmhFknAGRrLznOu5nc9ML+EJxGvrx6H7teuevqVqCuPcPK//3eDrrjQhehXVx9cnkGdw==}
+    dev: false
+
+  /remotion@4.0.123(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-BTSPp/mci6Xn+a06/x2cVgsgxJBI0mksfHqLE9qXxhBBkTiXRNo2Ak/mtylN1dtNRrOGhcqEdaxp6fumoghM2A==}
+    peerDependencies:
+      react: '>=16.8.0'
+      react-dom: '>=16.8.0'
+    dependencies:
+      react: 18.2.0
+      react-dom: 18.2.0(react@18.2.0)
     dev: false
 
   /resolve-from@4.0.0:

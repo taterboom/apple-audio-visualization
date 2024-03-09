@@ -29,6 +29,12 @@ function App() {
   return (
     <>
       <h1 className="mt-4 px-4 text-lg font-semibold">Apple Audio Visualization</h1>
+      <div className="absolute top-[18px] left-[400px] text-blue-400 text-sm underline">
+        <a href="https://github.com/taterboom/apple-audio-visualization">Github</a>
+        <a href="/remotion" className="ml-4">
+          Remotion version
+        </a>
+      </div>
       <main className="p-4 space-y-4">
         <div>
           <ToggleGroup
